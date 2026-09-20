@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { X, UserPlus, Users, Trash2, Check, Shield } from 'lucide-react';
-import { Member } from '../types';
+import { X, UserPlus, Users, Check, ShieldCheck, UserCheck } from 'lucide-react';
+import { Member, MemberRole } from '../types';
+import { RoleBadge } from './RoleBadge';
 
 interface MemberManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
   members: Member[];
-  onAddMember: (name: string, role: 'عضو' | 'رفيق') => void;
+  onAddMember: (name: string, role: MemberRole) => void;
+  onUpdateRole?: (memberId: string, role: MemberRole) => void;
 }
 
 export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
@@ -14,9 +16,10 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
   onClose,
   members,
   onAddMember,
+  onUpdateRole,
 }) => {
   const [newName, setNewName] = useState('');
-  const [newRole, setNewRole] = useState<'عضو' | 'رفيق'>('رفيق');
+  const [newRole, setNewRole] = useState<MemberRole>('عضو');
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -30,10 +33,17 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
     }
 
     onAddMember(newName.trim(), newRole);
-    setSuccessMsg(`تمت إضافة [${newName.trim()}] بنجاح`);
+    setSuccessMsg(`تمت إضافة [${newName.trim()}] بدور (${newRole}) بنجاح`);
     setNewName('');
+    setNewRole('عضو');
     setErrorMsg('');
     setTimeout(() => setSuccessMsg(''), 3000);
+  };
+
+  const handleToggleRole = (member: Member) => {
+    if (!onUpdateRole) return;
+    const nextRole: MemberRole = member.role === 'مشرف' ? 'عضو' : 'مشرف';
+    onUpdateRole(member.id, nextRole);
   };
 
   return (
@@ -50,10 +60,10 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">
-                أفراد المجلس
+                إدارة أفراد المجلس والأدوار
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                قائمة الإخوة والأصدقاء المشاركين في متابعة الأهداف المشتركة
+                تحديد أدوار أفراد المجلس وتوثيق المشرفين والأعضاء
               </p>
             </div>
           </div>
@@ -73,7 +83,7 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
           <form onSubmit={handleSubmit} className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/60 space-y-3">
             <h4 className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
               <UserPlus className="w-4 h-4 text-emerald-600" />
-              <span>إضافة رفيق جديد للمجلس</span>
+              <span>إضافة شخص جديد للمجلس</span>
             </h4>
 
             {errorMsg && (
@@ -91,7 +101,7 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
               <div className="sm:col-span-2">
                 <input
                   type="text"
-                  placeholder="اسم الرفيق أو الأخ..."
+                  placeholder="اسم الشخص..."
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   className="w-full h-10 px-3 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -101,11 +111,11 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
               <div>
                 <select
                   value={newRole}
-                  onChange={(e) => setNewRole(e.target.value as any)}
-                  className="w-full h-10 px-2.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  onChange={(e) => setNewRole(e.target.value as MemberRole)}
+                  className="w-full h-10 px-2.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
                 >
-                  <option value="رفيق">رفيق</option>
-                  <option value="عضو">عضو</option>
+                  <option value="عضو">عضو (Member)</option>
+                  <option value="مشرف">مشرف (Supervisor)</option>
                 </select>
               </div>
             </div>
@@ -121,33 +131,48 @@ export const MemberManagementModal: React.FC<MemberManagementModalProps> = ({
 
           {/* Current Members List */}
           <div className="space-y-2">
-            <h4 className="text-xs font-bold text-zinc-500 dark:text-zinc-400">
-              قائمة المشاركين ({members.length})
-            </h4>
+            <div className="flex items-center justify-between text-xs">
+              <h4 className="font-bold text-zinc-600 dark:text-zinc-400">
+                قائمة المسجلين ({members.length})
+              </h4>
+              <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                {members.filter(m => m.role === 'مشرف').length} مشرف • {members.filter(m => m.role === 'عضو').length} عضو
+              </span>
+            </div>
 
             <div className="divide-y divide-zinc-100 dark:divide-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
               {members.map((member) => (
                 <div
                   key={member.id}
-                  className="p-3 bg-white dark:bg-zinc-900 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition"
+                  className="p-3 bg-white dark:bg-zinc-900 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition gap-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full bg-gradient-to-tr ${member.avatarColor} text-white flex items-center justify-center font-bold text-xs`}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-8 h-8 rounded-full bg-gradient-to-tr ${member.avatarColor} text-white flex items-center justify-center font-bold text-xs shrink-0`}>
                       {member.name.charAt(0)}
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
                         {member.name}
                       </p>
                       <p className="text-[10px] text-zinc-400">
-                        تاريخ الانضمام: {member.joinedDate}
+                        انضمام: {member.joinedDate}
                       </p>
                     </div>
                   </div>
 
-                  <span className="text-[11px] px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-medium">
-                    {member.role}
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <RoleBadge role={member.role} />
+                    {onUpdateRole && (
+                      <button
+                        type="button"
+                        onClick={() => handleToggleRole(member)}
+                        title="تغيير الدور (مشرف / عضو)"
+                        className="text-[11px] px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 transition"
+                      >
+                        تبديل
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

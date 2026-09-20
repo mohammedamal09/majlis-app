@@ -4,7 +4,7 @@ export const INITIAL_MEMBERS: Member[] = [
   {
     id: 'm1',
     name: 'عبد الرحمن المنصور',
-    role: 'عضو',
+    role: 'مشرف',
     joinedDate: '2026-08-01',
     avatarColor: 'from-emerald-500 to-teal-700',
   },
@@ -18,7 +18,7 @@ export const INITIAL_MEMBERS: Member[] = [
   {
     id: 'm3',
     name: 'عمر بن خالد السعيد',
-    role: 'عضو',
+    role: 'مشرف',
     joinedDate: '2026-08-08',
     avatarColor: 'from-amber-500 to-orange-700',
   },

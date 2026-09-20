@@ -1,4 +1,4 @@
-import { DailyLogEntry, Member, MemberAggregates, GroupStatistics, MemberBook } from '../types';
+import { DailyLogEntry, Member, MemberRole, MemberAggregates, GroupStatistics, MemberBook } from '../types';
 import { INITIAL_MEMBERS, INITIAL_LOGS, INITIAL_BOOKS } from '../data/initialData';
 
 const LOGS_STORAGE_KEY = 'majlis_daily_logs_v1';
@@ -15,7 +15,20 @@ export function getMembers(): Member[] {
       localStorage.setItem(MEMBERS_STORAGE_KEY, JSON.stringify(INITIAL_MEMBERS));
       return INITIAL_MEMBERS;
     }
-    return JSON.parse(raw);
+    const parsed: Member[] = JSON.parse(raw);
+    // Sanitize roles strictly to 'عضو' | 'مشرف'
+    let modified = false;
+    const sanitized = parsed.map((m) => {
+      if (m.role !== 'عضو' && m.role !== 'مشرف') {
+        modified = true;
+        return { ...m, role: 'عضو' as MemberRole };
+      }
+      return m;
+    });
+    if (modified) {
+      saveMembers(sanitized);
+    }
+    return sanitized;
   } catch (err) {
     console.error('Error reading members from localStorage', err);
     return INITIAL_MEMBERS;
@@ -30,7 +43,7 @@ export function saveMembers(members: Member[]): void {
   }
 }
 
-export function addMember(name: string, role: 'عضو' | 'رفيق' = 'رفيق'): Member {
+export function addMember(name: string, role: MemberRole = 'عضو'): Member {
   const members = getMembers();
   const colors = [
     'from-emerald-500 to-teal-700',
@@ -50,6 +63,12 @@ export function addMember(name: string, role: 'عضو' | 'رفيق' = 'رفيق'
   const updated = [...members, newMember];
   saveMembers(updated);
   return newMember;
+}
+
+export function updateMemberRole(memberId: string, role: MemberRole): void {
+  const members = getMembers();
+  const updated = members.map((m) => (m.id === memberId ? { ...m, role } : m));
+  saveMembers(updated);
 }
 
 // Transactional Logs Database

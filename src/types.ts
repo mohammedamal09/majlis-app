@@ -1,7 +1,9 @@
+export type MemberRole = 'عضو' | 'مشرف';
+
 export interface Member {
   id: string;
   name: string;
-  role: 'عضو' | 'رفيق';
+  role: MemberRole;
   joinedDate: string;
   avatarColor: string;
 }

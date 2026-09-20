@@ -18,9 +18,10 @@ import {
   getBooks,
   addOrUpdateBook,
   deleteBook,
-  updateBookProgress
+  updateBookProgress,
+  updateMemberRole
 } from './services/db';
-import { DailyLogEntry, Member, MemberBook } from './types';
+import { DailyLogEntry, Member, MemberRole, MemberBook } from './types';
 
 export default function App() {
   // Dark mode state
@@ -112,12 +113,17 @@ export default function App() {
     setLogs((prev) => prev.filter((l) => l.id !== id));
   };
 
-  const handleAddMember = (name: string, role: 'عضو' | 'رفيق' = 'رفيق') => {
+  const handleAddMember = (name: string, role: MemberRole = 'عضو') => {
     const newMember = addMember(name, role);
     setMembers((prev) => [...prev, newMember]);
     if (!selectedMemberIdForProfile) {
       setSelectedMemberIdForProfile(newMember.id);
     }
+  };
+
+  const handleUpdateMemberRole = (memberId: string, role: MemberRole) => {
+    updateMemberRole(memberId, role);
+    setMembers(getMembers());
   };
 
   // Book Action Handlers (البناء المعرفي)
