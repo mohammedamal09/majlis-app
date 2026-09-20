@@ -1,0 +1,6 @@
+{
+  "name": "متابعة المجلس",
+  "description": "تطبيق عصري لمتابعة أهداف المجلس القرآنية والعلمية والعادات اليومية المشتركة بين الإخوة والأصدقاء بروح التعاون والإنجاز.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
